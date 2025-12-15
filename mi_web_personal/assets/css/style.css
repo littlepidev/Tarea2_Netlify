@@ -1,0 +1,44 @@
+/*
+  Archivo: style.css
+  Uso: Estilos básicos para la página del CV, complementando Bootstrap.
+*/
+
+/* Estilo general para el cuerpo */
+body {
+    background-color: #f8f9fa; /* Gris muy claro */
+    font-family: 'Arial', sans-serif;
+}
+
+/* Ajustes a la cabecera (Header) */
+header {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo para los títulos de sección */
+h2 {
+    color: #007bff; /* Color azul primario de Bootstrap */
+    font-weight: 600;
+}
+
+/* Estilo para las tarjetas de información (Card) */
+.card {
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo específico para el pie de página (Footer) */
+footer {
+    border-top: 3px solid #343a40;
+}
+
+/* Asegurar que el bloque de información de build sea legible */
+#build-info {
+    font-size: 0.9rem;
+    opacity: 0.85;
+}
