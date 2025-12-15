@@ -54,7 +54,7 @@ jobs:
 
       - name: Inject build info into index.html
         run: |
-          SITE_INDEX=./mi_web_personal/index.html         # AJUSTAR LA RUTA
+          SITE_INDEX=mi_web_personal/index.html         # AJUSTAR LA RUTA
           # Bloque de información a inyectar, incluyendo un estilo simple de Bootstrap
           BUILD_BLOCK="<p class=\"mt-2 p-1 bg-warning text-dark rounded d-inline-block\">Build: $BUILD_TS - SHA: $(echo $BUILD_SHA | cut -c1-7) - Image: $BUILD_TAG</p>"
           
@@ -69,7 +69,8 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "ci: update site with build info ${{ env.BUILD_TS }} (${{ env.BUILD_SHA }})"
-          file_pattern: "index.html"
+          file_pattern: "mi_web_personal/index.html"
           branch: main
           author_name: github-actions[bot]
           author_email: 41898282+github-actions[bot]@users.noreply.github.com
+
