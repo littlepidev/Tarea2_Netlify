@@ -1,0 +1,75 @@
+name: CI - Build Docker, Push to GHCR and Update Netlify Site
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-push-and-update-site:
+    runs-on: ubuntu-latest
+    env:
+      # Nombre de la imagen en GHCR (ajustar si se usa otro nombre base)
+      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/mi-web-app
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Necesario para que el bot pueda hacer commit de los cambios
+          persist-credentials: true
+
+      - name: Set up QEMU (optional multi-arch)
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image to GHCR
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./mi_web_personal/Dockerfile           # AJUSTAR LA RUTA
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Create build info
+        id: buildinfo
+        run: |
+          echo "BUILD_TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_ENV
+          echo "BUILD_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "BUILD_TAG=${IMAGE_NAME}:${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: Inject build info into index.html
+        run: |
+          SITE_INDEX=./mi_web_personal/index.html         # AJUSTAR LA RUTA
+          # Bloque de información a inyectar, incluyendo un estilo simple de Bootstrap
+          BUILD_BLOCK="<p class=\"mt-2 p-1 bg-warning text-dark rounded d-inline-block\">Build: $BUILD_TS - SHA: $(echo $BUILD_SHA | cut -c1-7) - Image: $BUILD_TAG</p>"
+          
+          # Lógica para encontrar y reemplazar el bloque <div id="build-info">
+          if grep -q "<div id=\"build-info\">" "$SITE_INDEX"; then
+            perl -0777 -pe "s|<div id=\"build-info\">.*?</div>|<div id=\"build-info\">$BUILD_BLOCK</div>|s" -i "$SITE_INDEX"
+          else
+            echo "Error: <div id=\"build-info\"> no encontrado. La inyeccion no se realizo."
+          fi
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "ci: update site with build info ${{ env.BUILD_TS }} (${{ env.BUILD_SHA }})"
+          file_pattern: "index.html"
+          branch: main
+          author_name: github-actions[bot]
+          author_email: 41898282+github-actions[bot]@users.noreply.github.com
